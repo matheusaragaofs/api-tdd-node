@@ -4,19 +4,21 @@
   "description": "tdd with express",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon index",
-    "test": "jest --watch",
+    "start": "cross-env NODE_ENV=development nodemon index",
+    "test": "cross-env NODE_ENV=test jest --watch",
     "lint": "eslint ."
   },
   "author": "Matheus Aragão",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "config": "^3.3.7",
     "express": "^4.17.1",
     "sequelize": "^6.21.0",
     "sqlite3": "^5.0.8"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "eslint": "^7.2.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
