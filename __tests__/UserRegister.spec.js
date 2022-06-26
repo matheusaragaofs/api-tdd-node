@@ -55,6 +55,7 @@ describe('User registration', () => {
         });
       });
   });
+
   it('saves the username and email to database', (done) => {
     request(app)
       .post('/api/1.0/users')

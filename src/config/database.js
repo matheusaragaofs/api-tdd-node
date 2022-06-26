@@ -7,6 +7,7 @@ const dbPassword = 'db-p4ss';
 const sequelize = new Sequelize(databaseName, userName, dbPassword, {
   dialect: 'sqlite',
   storage: './database.sqlite',
+  logging: false,
 });
 
 module.exports = sequelize;
