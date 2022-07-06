@@ -43,8 +43,14 @@ router.post(
       });
       return res.status(400).send({ validationErrors });
     }
-    await UserService.save(req.body);
-    return res.send({ message: 'User created' });
+
+    try {
+      await UserService.save(req.body);
+      return res.send({ message: 'User created' });
+
+    } catch (error) {
+      return res.status(502).send({ message: error.message })
+    }
   }
 );
 
