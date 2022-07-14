@@ -223,6 +223,15 @@ describe('User registration', () => {
     const users = await User.findAll()
     expect(users.length).toBe(0)
   })
+  it('returns Validation Failure message in error response body when validation fails', async () => {
+    const response = await postUser({
+      username: null,
+      email: validUser.email,
+      password: 'P4ssword'
+    })
+    expect(response.body.message).toBe('Validation Failure')
+
+  })
 });
 describe('Account activation', () => {
   it('activates the account when correct token is sent', async () => {
@@ -277,3 +286,40 @@ describe('Account activation', () => {
   })
 
 })
+describe('Error Model', () => {
+  it('returns path, timestamp, messsage and validationErros in response when validation failure', async () => {
+    const response = await postUser({ ...validUser, username: null })
+    const body = response.body
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message', 'validationErrors'])
+  })
+
+  it('returns path, timestamp and message in response when request fails other than validation error', async () => {
+    const token = 'this-token-does-not-exist';
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+    const body = response.body
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message'])
+
+  })
+  it('returns path in error body', async () => {
+    const token = 'this-token-does-not-exist';
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+    const body = response.body
+    expect(body.path).toEqual('/api/1.0/users/token/' + token)
+
+  })
+  it('returns timestamp in milliseconds within 5 seconds value in error body', async () => {
+    const nowInMillis = new Date().getTime();
+    const fiveSecondsLater = nowInMillis + 5 * 1000;
+    const token = 'this-token-does-not-exist';
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+    const body = response.body
+    expect(body.timestamp).toBeGreaterThan(nowInMillis)
+    expect(body.timestamp).toBeLessThan(fiveSecondsLater)
+  })
+});

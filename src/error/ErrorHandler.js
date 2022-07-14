@@ -8,5 +8,10 @@ module.exports = (err, req, res, next) => {
 
     }
 
-    res.status(status).send({ message, validationErrors })
+    res.status(status).send({
+        path: req.originalUrl,
+        timestamp: new Date().getTime(),
+        message,
+        validationErrors
+    })
 }
