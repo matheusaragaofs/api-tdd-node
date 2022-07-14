@@ -54,4 +54,13 @@ const activate = async (token) => {
 
 }
 
-module.exports = { save, findByEmail, activate };
+
+const getUsers = async () => {
+  return {
+    content: [],
+    page: 0,
+    size: 10,
+    totalPages: 0
+  }
+}
+module.exports = { save, findByEmail, activate, getUsers };
