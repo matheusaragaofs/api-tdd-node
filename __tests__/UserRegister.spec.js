@@ -2,13 +2,41 @@ const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
-const nodemailerStub = require("nodemailer-stub")
-const EmailService = require('../src/email/EmailService')
-beforeAll(() => {
-  return sequelize.sync();
+const SMTPServer = require('smtp-server').SMTPServer
+
+let lastMail, server;
+let simulateSmtpFailure = false;
+
+beforeAll(async () => {
+
+  server = new SMTPServer({
+    authOptional: true,
+    onData(stream, section, callback) {
+      let mailBody;
+      stream.on('data', (data) => {
+        mailBody += data.toString();
+      })
+      stream.on('end', () => {
+        if (simulateSmtpFailure) {
+          const err = new Error('Invalid mailbox')
+          err.responseCode = 553;
+          return callback(err)
+        }
+        lastMail = mailBody
+        callback()
+      })
+    }
+  })
+  await server.listen(8587, 'localhost')
+  await sequelize.sync();
 });
 
+afterAll(async () => {
+  await server.close()
+})
+
 beforeEach(() => {
+  simulateSmtpFailure = false;
   return User.destroy({ truncate: true });
 });
 
@@ -168,34 +196,130 @@ describe('User registration', () => {
     expect(savedUser.activationToken).toBeTruthy()
   })
 
-  it('it sends an Account activation email with activationToken', async () => {
+  it('sends an Account activation email with activationToken', async () => {
     await postUser();
-    const lastMail = nodemailerStub.interactsWithMail.lastMail();
-    expect(lastMail.to[0]).toBe('user@email.com')
+
     const users = await User.findAll();
     const savedUser = users[0]
-    expect(lastMail.content).toContain(savedUser.activationToken)
+
+    expect(lastMail).toContain('user@email.com')
+    expect(lastMail).toContain(savedUser.activationToken)
   })
 
   it('should 502 Bad Gateway when sending email fails', async () => {
-    const mockSendAccountActivation = jest.spyOn(EmailService, "sendAccountActivation").mockRejectedValue({ message: 'Failed to deliver email' })
+    simulateSmtpFailure = true;
     const response = await postUser();
     expect(response.status).toBe(502)
-    mockSendAccountActivation.mockRestore()
   })
   it('returns Email failure message when sending email fails', async () => {
-    const mockSendAccountActivation = jest.spyOn(EmailService, "sendAccountActivation").mockRejectedValue({ message: 'Failed to deliver email' })
+    simulateSmtpFailure = true;
     const response = await postUser();
     expect(response.body.message).toBe('E-mail Failure')
-    mockSendAccountActivation.mockRestore()
   })
 
   it('does not save user to database if activation email fails', async () => {
-    const mockSendAccountActivation = jest.spyOn(EmailService, "sendAccountActivation").mockRejectedValue({ message: 'Failed to deliver email' })
+    simulateSmtpFailure = true;
     await postUser();
-    mockSendAccountActivation.mockRestore()
     const users = await User.findAll()
     expect(users.length).toBe(0)
   })
+  it('returns Validation Failure message in error response body when validation fails', async () => {
+    const response = await postUser({
+      username: null,
+      email: validUser.email,
+      password: 'P4ssword'
+    })
+    expect(response.body.message).toBe('Validation Failure')
 
+  })
+});
+describe('Account activation', () => {
+  it('activates the account when correct token is sent', async () => {
+    await postUser()
+    let users = await User.findAll()
+    const token = users[0].activationToken;
+
+    await request(app).post('/api/1.0/users/token/' + token).send()
+    users = await User.findAll()
+
+    expect(users[0].inactive).toBe(false)
+  })
+  it('removes the token from user table after successful activation', async () => {
+    await postUser()
+    let users = await User.findAll()
+    const token = users[0].activationToken;
+
+    await request(app).post('/api/1.0/users/token/' + token).send()
+    users = await User.findAll()
+
+    expect(users[0].activationToken).toBeFalsy()
+  })
+  it('doest not activate the account when token is wrong', async () => {
+    await postUser()
+    let users = await User.findAll()
+    const token = 'this-token-does-not-exist';
+
+    await request(app).post('/api/1.0/users/token/' + token).send()
+    users = await User.findAll()
+
+    expect(users[0].inactive).toBe(true)
+  })
+  it('returns bad request when token is wrong', async () => {
+    await postUser()
+    const token = 'this-token-does-not-exist';
+
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+
+    expect(response.status).toBe(400)
+  })
+  it('returns error message when token is wrong', async () => {
+    await postUser()
+    const token = 'this-token-does-not-exist';
+
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+
+    expect(response.body.message).toBe('This account is either active or the token is invalid')
+  })
+
+})
+describe('Error Model', () => {
+  it('returns path, timestamp, messsage and validationErros in response when validation failure', async () => {
+    const response = await postUser({ ...validUser, username: null })
+    const body = response.body
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message', 'validationErrors'])
+  })
+
+  it('returns path, timestamp and message in response when request fails other than validation error', async () => {
+    const token = 'this-token-does-not-exist';
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+    const body = response.body
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message'])
+
+  })
+  it('returns path in error body', async () => {
+    const token = 'this-token-does-not-exist';
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+    const body = response.body
+    expect(body.path).toEqual('/api/1.0/users/token/' + token)
+
+  })
+  it('returns timestamp in milliseconds within 5 seconds value in error body', async () => {
+    const nowInMillis = new Date().getTime();
+    const fiveSecondsLater = nowInMillis + 5 * 1000;
+    const token = 'this-token-does-not-exist';
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+    const body = response.body
+    expect(body.timestamp).toBeGreaterThan(nowInMillis)
+    expect(body.timestamp).toBeLessThan(fiveSecondsLater)
+  })
 });

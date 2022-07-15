@@ -3,7 +3,7 @@ const express = require('express');
 const UserService = require('./UserService');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-
+const ValidationException = require('../error/ValidationException')
 router.post(
   '/api/1.0/users',
   check('username')
@@ -34,14 +34,12 @@ router.post(
     .bail()
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/)
     .withMessage('Password must have at least 1 uppercase, 1 lowercase letter and 1 number'),
-  async (req, res) => {
+  async (req, res, next) => {
+
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
-      const validationErrors = {};
-      errors.array().forEach((error) => {
-        return (validationErrors[error.param] = error.msg);
-      });
-      return res.status(400).send({ validationErrors });
+      return next(new ValidationException(errors.array()))
     }
 
     try {
@@ -49,9 +47,26 @@ router.post(
       return res.send({ message: 'User created' });
 
     } catch (error) {
-      return res.status(502).send({ message: error.message })
+      next(error)
     }
   }
 );
 
+router.post('/api/1.0/users/token/:token', async (req, res, next) => {
+
+  try {
+    const token = req.params.token
+    await UserService.activate(token);
+    return res.send({ message: 'Account activation succesfuly' })
+
+  } catch (error) {
+    next(error)
+  }
+
+})
+
+router.get('/api/1.0/users', async (req, res) => {
+  const users = await UserService.getUsers()
+  res.send(users);
+})
 module.exports = router;
