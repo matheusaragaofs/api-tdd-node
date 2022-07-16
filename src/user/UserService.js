@@ -56,10 +56,19 @@ const activate = async (token) => {
 
 
 const getUsers = async () => {
+  const size = 10
+  const users = await User.findAll({
+    limit: size,
+    attributes: ['id', 'username', 'email'],
+    where: {
+      inactive: false
+    },
+
+  })
   return {
-    content: [],
+    content: users,
     page: 0,
-    size: 10,
+    size,
     totalPages: 0
   }
 }
