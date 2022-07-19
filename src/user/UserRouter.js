@@ -66,7 +66,11 @@ router.post('/api/1.0/users/token/:token', async (req, res, next) => {
 })
 
 router.get('/api/1.0/users', async (req, res) => {
-  const users = await UserService.getUsers()
+  const { page } = req.query
+  let currentPage = page ? Number.parseInt(page) : 0
+  if (currentPage < 0) currentPage = 0
+
+  const users = await UserService.getUsers({ page: currentPage })
   res.send(users);
 })
 module.exports = router;

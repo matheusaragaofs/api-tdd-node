@@ -26,7 +26,6 @@ describe('Listing Users', () => {
                 inactive: i >= activeUserCount
             })
         }
-
     }
     it('returns 200 ok when there are no user in datase', async () => {
         //independente se hovuer ou não usuários no banco de dados retornará status 200;
@@ -61,7 +60,17 @@ describe('Listing Users', () => {
     it('returns 2 as totalPages when there are 15 active and 7 inactive users', async () => {
         await addUsers(15, 7)
         const response = await getUsers()
-        console.log('response.body.length:', response.body.content.length)
         expect(response.body.totalPages).toBe(2)
     })
+    it('returns second page users and page indicator when page is set as 1 in request parameter', async () => {
+        await addUsers(11)
+        const response = await request(app).get('/api/1.0/users').query({ page: 1 })
+        expect(response.body.content[0].username).toBe('user11')
+        expect(response.body.page).toBe(1)
+    });
+    it('returns first page when page is set below zero as request parameter', async () => {
+        await addUsers(11)
+        const response = await request(app).get('/api/1.0/users').query({ page: -5 })
+        expect(response.body.page).toBe(0)
+    });
 })
