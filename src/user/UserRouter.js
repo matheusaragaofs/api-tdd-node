@@ -65,12 +65,21 @@ router.post('/api/1.0/users/token/:token', async (req, res, next) => {
 
 })
 
-
-
 router.get('/api/1.0/users', pagination, async (req, res) => {
   const { page, size } = req.pagination
 
   const users = await UserService.getUsers({ page, size })
   res.send(users);
+})
+
+router.get('/api/1.0/users/:id', async (req, res, next) => {
+  const { id } = req.params
+  try {
+    const user = await UserService.getUserById({ id })
+    res.send(user)
+  } catch (err) {
+    next(err)
+  }
+
 })
 module.exports = router;
