@@ -1,5 +1,5 @@
 const express = require('express');
-
+const pagination = require('../middleware/pagination')
 const UserService = require('./UserService');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
@@ -65,12 +65,12 @@ router.post('/api/1.0/users/token/:token', async (req, res, next) => {
 
 })
 
-router.get('/api/1.0/users', async (req, res) => {
-  const { page } = req.query
-  let currentPage = page ? Number.parseInt(page) : 0
-  if (currentPage < 0) currentPage = 0
 
-  const users = await UserService.getUsers({ page: currentPage })
+
+router.get('/api/1.0/users', pagination, async (req, res) => {
+  const { page, size } = req.pagination
+
+  const users = await UserService.getUsers({ page, size })
   res.send(users);
 })
 module.exports = router;

@@ -55,8 +55,12 @@ const activate = async (token) => {
 }
 
 
-const getUsers = async ({ page }) => {
-  const pageSize = 10
+const getUsers = async ({ page, size }) => {
+  let pageSize = 10
+  if (size) {
+    pageSize = size
+  }
+
   const usersWithCount = await User.findAndCountAll({
     limit: pageSize,
     offset: pageSize * page,
