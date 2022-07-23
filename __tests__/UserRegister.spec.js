@@ -31,14 +31,15 @@ beforeAll(async () => {
   await sequelize.sync();
 });
 
+beforeEach(async () => {
+  simulateSmtpFailure = false;
+  await User.destroy({ truncate: true });
+});
+
 afterAll(async () => {
   await server.close()
 })
 
-beforeEach(() => {
-  simulateSmtpFailure = false;
-  return User.destroy({ truncate: true });
-});
 
 const validUser = {
   username: 'user1',
