@@ -3,7 +3,8 @@ const pagination = require('../middleware/pagination')
 const UserService = require('./UserService');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const ValidationException = require('../error/ValidationException')
+const ValidationException = require('../error/ValidationException');
+const ForbiddenExecption = require('../error/ForbiddenExecption');
 router.post(
   '/api/1.0/users',
   check('username')
@@ -81,5 +82,11 @@ router.get('/api/1.0/users/:id', async (req, res, next) => {
     next(err)
   }
 
+})
+
+router.put('/api/1.0/users/:id', (req, res) => {
+  // const id = req.params.id
+  // return res.status(403).send()
+  throw new ForbiddenExecption('You are not authorized to update user')
 })
 module.exports = router;
