@@ -5,6 +5,8 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
 const ForbiddenExecption = require('../error/ForbiddenExecption');
+const basicAuthentication = require('../middleware/basicAuthentication');
+
 router.post(
   '/api/1.0/users',
   check('username')
@@ -84,9 +86,14 @@ router.get('/api/1.0/users/:id', async (req, res, next) => {
 
 })
 
-router.put('/api/1.0/users/:id', (req, res) => {
-  // const id = req.params.id
-  // return res.status(403).send()
-  throw new ForbiddenExecption('You are not authorized to update user')
+router.put('/api/1.0/users/:id', basicAuthentication, async (req, res, next) => {
+  const authenticatedUser = req.authenticatedUser
+
+  if (!authenticatedUser || authenticatedUser.id != req.params.id) {
+    return next(new ForbiddenExecption('You are not authorized to update user'))
+  }
+  await UserService.updateUser(req.params.id, req.body)
+  return res.send()
+
 })
 module.exports = router;

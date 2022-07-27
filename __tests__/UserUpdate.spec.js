@@ -73,7 +73,7 @@ describe('User Update', () => {
         expect(response.status).toBe(403)
     })
     it('returns forbidden when  update request sent by inactive user with correct credentials for its own user', async () => {
-        const inactiveUser = await addUser({ ...activeUser, incative: true })
+        const inactiveUser = await addUser({ ...activeUser, inactive: true })
         const response = await putUser(inactiveUser.id, null, {
             auth: {
                 email: "user1@email.com",
@@ -81,5 +81,18 @@ describe('User Update', () => {
             }
         })
         expect(response.status).toBe(403)
+    })
+    it('returns 200 ok when valid update request sent from authorized user', async () => {
+        const savedUser = await addUser()
+        const validUpdate = { username: 'user1-updated' }
+        const response = await putUser(savedUser.id, validUpdate, { auth: { email: savedUser.email, password: 'P4ssword' } })
+        expect(response.status).toBe(200)
+    })
+    it('updates username when valid updated request is sent from authorized', async () => {
+        const savedUser = await addUser()
+        const validUpdate = { username: 'user1-updated' }
+        await putUser(savedUser.id, validUpdate, { auth: { email: savedUser.email, password: 'P4ssword' } })
+        const inDBUser = await User.findOne({ where: { id: savedUser.id } })
+        expect(inDBUser.username).toBe(validUpdate.username)
     })
 })

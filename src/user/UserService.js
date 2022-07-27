@@ -93,4 +93,8 @@ const getUserById = async ({ id }) => {
 
   return user
 }
-module.exports = { save, findByEmail, activate, getUsers, getUserById };
+
+const updateUser = async (id, updatedBody) => {
+  await User.update(updatedBody, { where: { id } })
+}
+module.exports = { save, findByEmail, activate, getUsers, getUserById, updateUser };
