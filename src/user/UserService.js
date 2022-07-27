@@ -6,7 +6,7 @@ const EmailException = require('../email/EmailException')
 const InvalidTokenException = require('./InvalidTokenException')
 const sequelize = require('../config/database')
 const UserNotFoundExecption = require('./UserNotFoundException')
-
+const Sequelize = require('sequelize')
 const generateToken = (length) => {
   return crypto.randomBytes(length).toString('hex').substring(0, length)
 
@@ -57,7 +57,7 @@ const activate = async (token) => {
 }
 
 
-const getUsers = async ({ page, size }) => {
+const getUsers = async ({ page, size, authenticatedUser }) => {
   let pageSize = 10
   if (size) {
     pageSize = size
@@ -68,7 +68,11 @@ const getUsers = async ({ page, size }) => {
     offset: pageSize * page,
     attributes: ['id', 'username', 'email'],
     where: {
-      inactive: false
+      inactive: false,
+      id: {
+        [Sequelize.Op.not]: authenticatedUser ? authenticatedUser.id : 0
+
+      }
     },
 
   })
