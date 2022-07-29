@@ -20,4 +20,8 @@ const verify = async (token) => {
         id: userId
     }
 }
-module.exports = { createToken, verify }
+
+const deleteToken = async (token) => {
+    await Token.destroy({ where: { token } })
+}
+module.exports = { createToken, verify, deleteToken }
