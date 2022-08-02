@@ -99,4 +99,8 @@ const getUserById = async ({ id }) => {
 const updateUser = async (id, updatedBody) => {
   await User.update(updatedBody, { where: { id } })
 }
-module.exports = { save, findByEmail, activate, getUsers, getUserById, updateUser };
+const deleteUser = async (id) => {
+  await User.destroy({ where: { id } })
+}
+
+module.exports = { save, findByEmail, activate, getUsers, getUserById, updateUser, deleteUser };
