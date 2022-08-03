@@ -24,4 +24,6 @@ const verify = async (token) => {
 const deleteToken = async (token) => {
     await Token.destroy({ where: { token } })
 }
+
+
 module.exports = { createToken, verify, deleteToken }
