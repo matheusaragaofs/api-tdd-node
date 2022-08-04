@@ -1,4 +1,3 @@
-const sequelize = require('sequelize');
 const Sequelize = require('sequelize');
 const database = require('../config/database');
 
@@ -12,9 +11,13 @@ Token.init({
     token: {
         type: Sequelize.STRING
     },
+    lastUsedAt: {
+        type: Sequelize.DATE
+    },
 }, {
     sequelize: database,
-    modelName: 'TOKEN'
+    modelName: 'TOKEN',
+    timestamps: false
 })
 
 module.exports = Token
