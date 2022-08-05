@@ -5,6 +5,7 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
 const ForbiddenExecption = require('../error/ForbiddenExecption');
+const NotFoundException = require('../error/NotFoundException');
 
 router.post(
   '/api/1.0/users',
@@ -98,12 +99,30 @@ router.put('/api/1.0/users/:id', async (req, res, next) => {
 
 router.delete('/api/1.0/users/:id', async (req, res, next) => {
   const authenticatedUser = req.authenticatedUser
-  const userId = req.params.id
   if (!authenticatedUser || authenticatedUser.id != req.params.id) {
     return next(new ForbiddenExecption('You are not authorized to delete user'))
   }
 
   await UserService.deleteUser(req.params.id)
   res.send()
+})
+
+router.post('/api/1.0/password-reset', check('email').isEmail().withMessage('E-mail is not valid'), async (req, res, next) => {
+  const email = req.body.email
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return next(new ValidationException(errors.array()))
+  }
+
+  try {
+    await UserService.findByEmail(email)
+    return res.send()
+  } catch (error) {
+
+    return next(new NotFoundException('E-mail not found'))
+  }
+
 })
 module.exports = router;
