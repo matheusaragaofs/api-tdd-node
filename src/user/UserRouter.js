@@ -5,7 +5,6 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
 const ForbiddenExecption = require('../error/ForbiddenExecption');
-const NotFoundException = require('../error/NotFoundException');
 
 router.post(
   '/api/1.0/users',
@@ -117,11 +116,11 @@ router.post('/api/1.0/password-reset', check('email').isEmail().withMessage('E-m
   }
 
   try {
-    await UserService.findByEmail(email)
-    return res.send()
+    await UserService.passwordResetRequest(email)
+    res.send({ message: 'Check your e-mail for resetting your passsword' })
   } catch (error) {
+    next(error)
 
-    return next(new NotFoundException('E-mail not found'))
   }
 
 })
