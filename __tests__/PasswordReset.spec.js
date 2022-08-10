@@ -53,7 +53,7 @@ const addUser = async (user = { ...activeUser }) => {
 
 
 const postPasswordReset = (email = 'unkown@email.com', options = {}) => {
-    const agent = request(app).post('/api/1.0/password-reset')
+    const agent = request(app).post('/api/1.0/user/password')
     return agent.send({ email })
 }
 
@@ -69,7 +69,7 @@ describe('Password Reset Request', () => {
         const nowInMillis = new Date().getTime()
         const response = await postPasswordReset()
         expect(response.body.message).toBe('E-mail not found')
-        expect(response.body.path).toBe('/api/1.0/password-reset')
+        expect(response.body.path).toBe('/api/1.0/user/password')
         expect(response.body.timestamp).toBeGreaterThan(nowInMillis)
     })
     it('returns 400 with validation error response when request does not have valid email', async () => {
