@@ -54,5 +54,11 @@
   "prettier": {
     "singleQuote": true,
     "printWidth": 120
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/config/"
+    ]
   }
 }

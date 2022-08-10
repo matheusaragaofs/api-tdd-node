@@ -4,7 +4,7 @@ const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
 const bcrypt = require('bcrypt');
 const SMTPServer = require('smtp-server').SMTPServer
-
+const config = require('config')
 let lastMail, server;
 let simulateSmtpFailure = false;
 
@@ -27,7 +27,7 @@ beforeAll(async () => {
             })
         }
     })
-    await server.listen(8587, 'localhost')
+    await server.listen(config.mail.port, 'localhost')
     await sequelize.sync();
     jest.setTimeout(20000)
 });
@@ -93,12 +93,19 @@ describe('Password Reset Request', () => {
         const userInDB = await User.findOne({ where: { email: user.email } })
         expect(userInDB.passwordResetToken).toBeTruthy()
     })
-    it('sends a password reset email with passwordResetToken', async () => {
+    it('sends a password reset email with passwordResetToken',
+        async () => {
+            const user = await addUser()
+            await postPasswordReset(user.email)
+            const userInDB = await User.findOne({ where: { email: user.email } })
+            const passwordResetToken = userInDB.passwordResetToken
+            expect(lastMail).toContain('user1@email.com')
+            expect(lastMail).toContain(passwordResetToken)
+        })
+    it('returns error message when sending email fails', async () => {
+        simulateSmtpFailure = true
         const user = await addUser()
-        await postPasswordReset(user.email)
-        const userInDB = await User.findOne({ where: { email: user.email } })
-        const passwordResetToken = userInDB.passwordResetToken
-        expect(lastMail).toContain('user1@email.com')
-        expect(lastMail).toContain(passwordResetToken)
+        const response = await postPasswordReset(user.email)
+        expect(response.body.message).toBe('E-mail Failure')
     })
 })

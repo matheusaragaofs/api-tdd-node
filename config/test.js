@@ -1,4 +1,5 @@
-{
+
+module.exports = {
   "database": {
     "databaseName": "hoaxify",
     "username": "my-db_user",
@@ -9,7 +10,7 @@
   },
   "mail": {
     "host": "localhost",
-    "port": 8587,
+    "port": Math.floor(Math.random() * 2000) + 10000,
     "tls": {
       "rejectUnauthorized": false
     }

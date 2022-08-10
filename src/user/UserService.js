@@ -12,13 +12,9 @@ const { randomString } = require('../shared/generator');
 
 const save = async (body) => {
   const { username, email, password } = body;
-
   const hash = await bcrypt.hash(password, 10);
-
   const user = { username, email, password: hash, activationToken: randomString(60) }
-
   const transaction = await sequelize.transaction()
-
   await User.create(user, { transaction });
 
   try {
@@ -37,8 +33,6 @@ const findByEmail = async (email) => {
 
 
 const activate = async (token) => {
-
-
   const user = await User.findOne({
     where: {
       activationToken: token
@@ -112,6 +106,13 @@ const passwordResetRequest = async (email) => {
   }
   user.passwordResetToken = randomString(16)
   await user.save()
-  await EmailService.sendPasswordReset(email, user.passwordResetToken)
+
+  try {
+    await EmailService.sendPasswordReset(email, user.passwordResetToken)
+  } catch (error) {
+    throw new EmailException()
+  }
+
+
 }
 module.exports = { save, findByEmail, activate, getUsers, getUserById, updateUser, deleteUser, passwordResetRequest };

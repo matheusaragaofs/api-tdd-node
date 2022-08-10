@@ -3,7 +3,7 @@ const app = require('../src/app');
 const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
 const SMTPServer = require('smtp-server').SMTPServer
-
+const config = require('config')
 let lastMail, server;
 let simulateSmtpFailure = false;
 
@@ -27,7 +27,7 @@ beforeAll(async () => {
       })
     }
   })
-  await server.listen(8587, 'localhost')
+  await server.listen(config.mail.port, 'localhost')
   await sequelize.sync();
   jest.setTimeout(20000)
 });
