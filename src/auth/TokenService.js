@@ -51,4 +51,9 @@ const scheduledCleanup = () => {
 
 }
 
-module.exports = { createToken, verify, deleteToken, scheduledCleanup }
+
+const clearTokens = async (userId) => {
+    await Token.destroy({ where: { userId } })
+}
+
+module.exports = { createToken, verify, deleteToken, scheduledCleanup, clearTokens }

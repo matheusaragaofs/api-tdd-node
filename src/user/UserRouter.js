@@ -5,7 +5,7 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
 const ForbiddenExecption = require('../error/ForbiddenExecption');
-const User = require('./User')
+
 router.post(
   '/api/1.0/users',
   check('username')
@@ -125,11 +125,7 @@ router.post('/api/1.0/user/password', check('email').isEmail().withMessage('E-ma
 })
 
 const passwordResetTokenValidator = async (req, res, next) => {
-  const user = await User.findOne({
-    where: {
-      passwordResetToken: req.body.passwordResetToken
-    }
-  })
+  const user = await UserService.findByPasswordResetToken(req.body.passwordResetToken)
   if (!user) {
     next(new ForbiddenExecption('Your are not authorized to update your password. Please follow the password steps again.'))
   }
@@ -152,6 +148,8 @@ router.put('/api/1.0/user/password',
     if (!errors.isEmpty()) {
       return next(new ValidationException(errors.array()))
     }
+    await UserService.updatePassword(req.body)
+    res.send()
   })
 
 module.exports = router;
