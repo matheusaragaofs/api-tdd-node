@@ -9,7 +9,7 @@ const NotFoundException = require('../error/NotFoundException')
 const Sequelize = require('sequelize');
 const { randomString } = require('../shared/generator');
 const TokenService = require('../auth/TokenService');
-
+const FileService = require('../file/FileService')
 
 const save = async (body) => {
   const { username, email, password } = body;
@@ -93,8 +93,10 @@ const getUserById = async ({ id }) => {
 }
 
 const updateUser = async (id, updatedBody) => {
+  const imageFilename = await FileService.saveProfileImage(updatedBody?.image)
+
   try {
-    await User.update(updatedBody, { where: { id } })
+    await User.update({ ...updatedBody, image: imageFilename }, { where: { id } })
     const updatedUser = await getUserById({ id })
     return updatedUser
   } catch (error) {
