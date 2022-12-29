@@ -3,6 +3,7 @@ const path = require('path')
 const config = require('config')
 const { randomString } = require('../shared/generator')
 const { uploadDir, profileDir } = config
+const detect = require('detect-file-type');
 
 const profileFolder = path.join('.', uploadDir, profileDir)
 
@@ -26,4 +27,17 @@ const deleteProfileImage = async (filename) => {
     const filePath = path.join(profileFolder, filename)
     await fs.promises.unlink(filePath)
 }
-module.exports = { createFolders, saveProfileImage, deleteProfileImage }
+
+const isLessThan2MB = (buffer) => buffer.length < 2 * 1024 * 1024
+
+const isSupportedFileType = (buffer) => new Promise((resolve, reject) => {
+    detect.fromBuffer(buffer, (err, result) => {
+        const validMimes = ['image/png', 'image/jpeg']
+        if (!result?.mime || !validMimes.includes(result.mime)) resolve(false)
+        resolve(true)
+    });
+})
+
+
+
+module.exports = { createFolders, saveProfileImage, deleteProfileImage, isLessThan2MB, isSupportedFileType }

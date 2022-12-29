@@ -5,6 +5,8 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const ValidationException = require('../error/ValidationException');
 const ForbiddenExecption = require('../error/ForbiddenExecption');
+const { isLessThan2MB, isSupportedFileType } = require('../file/FileService');
+
 
 router.post(
   '/api/1.0/users',
@@ -92,26 +94,27 @@ router.put('/api/1.0/users/:id',
     .bail()
     .isLength({ min: 4, max: 32 })
     .withMessage('Must have min 4 and max 32 characters'),
-  check('image').custom((imageAsBase64String) => {
+  check('image').custom(async (imageAsBase64String) => {
     if (!imageAsBase64String) return true
+
     const buffer = Buffer.from(imageAsBase64String, 'base64')
-    if (buffer.length > 2 * 1024 * 1024) {
+    const supportedType = await isSupportedFileType(buffer)
+
+    if (!isLessThan2MB(buffer)) {
       throw new Error('Your profile image cannot be bigger than 2MB')
     }
+    if (!supportedType) throw new Error('Only JPEG or PNG files are allowed')
+
     return true
   }),
   async (req, res, next) => {
-
-
     const authenticatedUser = req.authenticatedUser
-
 
     if (!authenticatedUser || authenticatedUser.id != req.params.id) {
       return next(new ForbiddenExecption('You are not authorized to update user'))
     }
 
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
       return next(new ValidationException(errors.array()))
     }

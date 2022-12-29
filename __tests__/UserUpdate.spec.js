@@ -46,8 +46,8 @@ const putUser = async (id = 5, body = null, options = {}) => {
     return agent.send(body)
 }
 
-const readFileAsBase64 = () => {
-    const filePath = path.join('.', '__tests__', 'resources', 'test-png.png')
+const readFileAsBase64 = (file = 'test-png.png') => {
+    const filePath = path.join('.', '__tests__', 'resources', file)
     return fs.readFileSync(filePath, {
         encoding: 'base64'
     })
@@ -179,14 +179,14 @@ describe('User Update', () => {
         expect(fs.existsSync(profileImagePath)).toBe(false)
     })
     it('returns 200 when image size is exactly 2mb', async () => {
-        //each letter is 1byte
-        //1024bytes = 1kb
-        //1kb * 1024 = 1mb
-        const fileWithSize2MB = 'a'.repeat(1024 * 1024 * 2)
-        const base64 = Buffer.from(fileWithSize2MB).toString('base64')
+        const testPng = readFileAsBase64()
+        const pngByte = Buffer.from(testPng, 'base64').length
+        const twoMB = 1024 * 1024 * 2
+        const filling = 'a'.repeat(twoMB - pngByte)
+        const fillBase64 = Buffer.from(filling).toString('base64')
 
         const savedUser = await addUser()
-        const validUpdate = { username: 'user1-updated', image: base64 }
+        const validUpdate = { username: 'user1-updated', image: testPng + fillBase64 }
 
         const response = await putUser(savedUser.id, validUpdate, {
             auth: { email: savedUser.email, password: 'P4ssword' }
@@ -238,5 +238,35 @@ describe('User Update', () => {
         })
 
         expect(response.body.validationErrors.image).toBe('Your profile image cannot be bigger than 2MB')
+    })
+    it.each`
+    file | status
+    ${'test-gif.gif'} | ${400}
+    ${'test-pdf.pdf'} | ${400}
+    ${'test-txt.txt'} | ${400}
+    ${'test-png.png'} | ${200}
+    ${'test-jpg.jpg'} | ${200}
+    `('returns $status when uploading $file as image', async ({ file, status }) => {
+        const fileInBase64 = readFileAsBase64(file)
+        const savedUser = await addUser()
+        const updateBody = { username: 'user1-updated', image: fileInBase64 }
+        const response = await putUser(savedUser.id, updateBody, {
+            auth: { email: savedUser.email, password: 'P4ssword' }
+        })
+        expect(response.status).toBe(status)
+    })
+    it.each`
+    file | message
+    ${'test-gif.gif'} | ${'Only JPEG or PNG files are allowed'}
+    ${'test-pdf.pdf'} | ${'Only JPEG or PNG files are allowed'}
+    ${'test-txt.txt'} | ${'Only JPEG or PNG files are allowed'}
+    `('returns $message when uploading $file as image', async ({ file, message }) => {
+        const fileInBase64 = readFileAsBase64(file)
+        const savedUser = await addUser()
+        const updateBody = { username: 'user1-updated', image: fileInBase64 }
+        const response = await putUser(savedUser.id, updateBody, {
+            auth: { email: savedUser.email, password: 'P4ssword' }
+        })
+        expect(response.body.validationErrors.image).toBe(message)
     })
 })
