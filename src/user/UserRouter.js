@@ -91,8 +91,8 @@ router.put('/api/1.0/users/:id', async (req, res, next) => {
   if (!authenticatedUser || authenticatedUser.id != req.params.id) {
     return next(new ForbiddenExecption('You are not authorized to update user'))
   }
-  await UserService.updateUser(req.params.id, req.body)
-  return res.send()
+  const updatedUser = await UserService.updateUser(req.params.id, req.body)
+  return res.send(updatedUser)
 
 })
 

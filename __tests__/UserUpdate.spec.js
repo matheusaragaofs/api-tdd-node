@@ -128,4 +128,12 @@ describe('User Update', () => {
         const inDBUser = await User.findOne({ where: { id: savedUser.id } })
         expect(inDBUser.image).toBeTruthy();
     })
+    it('should returns success body having only id, username, email and image', async () => {
+        const savedUser = await addUser()
+        const validUpdate = { username: 'user1-updated' }
+        const response = await putUser(savedUser.id, validUpdate, {
+            auth: { email: savedUser.email, password: 'P4ssword' }
+        })
+        expect(Object.keys(response.body)).toEqual(['id', 'username', 'email', 'image'])
+    })
 })

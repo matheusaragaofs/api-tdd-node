@@ -60,7 +60,7 @@ const getUsers = async ({ page, size, authenticatedUser }) => {
   const usersWithCount = await User.findAndCountAll({
     limit: pageSize,
     offset: pageSize * page,
-    attributes: ['id', 'username', 'email'],
+    attributes: ['id', 'username', 'email', 'image'],
     where: {
       inactive: false,
       id: {
@@ -83,7 +83,7 @@ const getUsers = async ({ page, size, authenticatedUser }) => {
 }
 
 const getUserById = async ({ id }) => {
-  const user = await User.findOne({ where: { id, inactive: false }, attributes: ['id', 'username', 'email'] })
+  const user = await User.findOne({ where: { id, inactive: false }, attributes: ['id', 'username', 'email', 'image'] })
 
   if (!user) {
     throw new UserNotFoundExecption()
@@ -93,7 +93,14 @@ const getUserById = async ({ id }) => {
 }
 
 const updateUser = async (id, updatedBody) => {
-  await User.update(updatedBody, { where: { id } })
+  try {
+    await User.update(updatedBody, { where: { id } })
+    const updatedUser = await getUserById({ id })
+    return updatedUser
+  } catch (error) {
+    throw new UserNotFoundExecption()
+  }
+
 }
 
 const deleteUser = async (id) => {
