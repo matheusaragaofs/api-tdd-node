@@ -92,6 +92,14 @@ router.put('/api/1.0/users/:id',
     .bail()
     .isLength({ min: 4, max: 32 })
     .withMessage('Must have min 4 and max 32 characters'),
+  check('image').custom((imageAsBase64String) => {
+    if (!imageAsBase64String) return true
+    const buffer = Buffer.from(imageAsBase64String, 'base64')
+    if (buffer.length > 2 * 1024 * 1024) {
+      throw new Error('Your profile image cannot be bigger than 2MB')
+    }
+    return true
+  }),
   async (req, res, next) => {
 
 

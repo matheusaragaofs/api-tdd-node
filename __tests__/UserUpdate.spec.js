@@ -178,4 +178,65 @@ describe('User Update', () => {
         const profileImagePath = path.join(profileDirectory, firstImage)
         expect(fs.existsSync(profileImagePath)).toBe(false)
     })
+    it('returns 200 when image size is exactly 2mb', async () => {
+        //each letter is 1byte
+        //1024bytes = 1kb
+        //1kb * 1024 = 1mb
+        const fileWithSize2MB = 'a'.repeat(1024 * 1024 * 2)
+        const base64 = Buffer.from(fileWithSize2MB).toString('base64')
+
+        const savedUser = await addUser()
+        const validUpdate = { username: 'user1-updated', image: base64 }
+
+        const response = await putUser(savedUser.id, validUpdate, {
+            auth: { email: savedUser.email, password: 'P4ssword' }
+        })
+
+        expect(response.status).toBe(200)
+    })
+    it('returns 400 when image size exceeds 2mb', async () => {
+        const fileWithSizeExceeding2MB = 'a'.repeat(1024 * 1024 * 2) + 'a' //2mb + 1 byte
+        const base64 = Buffer.from(fileWithSizeExceeding2MB).toString('base64')
+
+        const savedUser = await addUser()
+        const invalidUpdate = { username: 'user1-updated', image: base64 }
+
+        const response = await putUser(savedUser.id, invalidUpdate, {
+            auth: { email: savedUser.email, password: 'P4ssword' }
+        })
+
+        expect(response.status).toBe(400)
+    })
+    it('keeps the old image after user only updates the username', async () => {
+        const fileInBase64 = readFileAsBase64()
+        const savedUser = await addUser()
+        const validUpdate = { username: 'user1-updated', image: fileInBase64 }
+        const response = await putUser(savedUser.id, validUpdate, {
+            auth: { email: savedUser.email, password: 'P4ssword' }
+        })
+        const firstImage = response.body.image
+
+        await putUser(savedUser.id, { username: 'user1_updated-again' }, {
+            auth: { email: savedUser.email, password: 'P4ssword' }
+        })
+
+        const profileImagePath = path.join(profileDirectory, firstImage)
+        expect(fs.existsSync(profileImagePath)).toBe(true)
+        const userInDB = await User.findOne({ where: { id: savedUser.id } })
+        expect(userInDB.image).toBe(firstImage)
+        // Your profile image cannot be bigger than 2MB
+    })
+    it('returns "Your profile image cannot be bigger than 2MB when file size exceeds 2mb', async () => {
+        const fileWithSizeExceeding2MB = 'a'.repeat(1024 * 1024 * 2) + 'a' //2mb + 1 byte
+        const base64 = Buffer.from(fileWithSizeExceeding2MB).toString('base64')
+
+        const savedUser = await addUser()
+        const invalidUpdate = { username: 'user1-updated', image: base64 }
+
+        const response = await putUser(savedUser.id, invalidUpdate, {
+            auth: { email: savedUser.email, password: 'P4ssword' }
+        })
+
+        expect(response.body.validationErrors.image).toBe('Your profile image cannot be bigger than 2MB')
+    })
 })
