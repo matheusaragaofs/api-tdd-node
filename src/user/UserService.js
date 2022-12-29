@@ -93,16 +93,26 @@ const getUserById = async ({ id }) => {
 }
 
 const updateUser = async (id, updatedBody) => {
-  const imageFilename = await FileService.saveProfileImage(updatedBody?.image)
+  const { username, image } = updatedBody
 
-  try {
-    await User.update({ ...updatedBody, image: imageFilename }, { where: { id } })
-    const updatedUser = await getUserById({ id })
-    return updatedUser
-  } catch (error) {
-    throw new UserNotFoundExecption()
+  const user = await User.findOne({ where: { id } })
+
+  const imageFilename = await FileService.saveProfileImage(image)
+
+  if (user.image) {
+    await FileService.deleteProfileImage(user.image)
   }
 
+  user.username = username
+  user.image = imageFilename
+  user.save()
+
+  return {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    image: user.image
+  }
 }
 
 const deleteUser = async (id) => {
