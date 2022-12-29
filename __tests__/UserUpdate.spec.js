@@ -17,13 +17,6 @@ beforeAll(async () => {
 beforeEach(async () => {
     await User.destroy({ truncate: { cascade: true } })
 })
-afterAll(async () => {
-    const files = fs.readdirSync(profileDirectory)
-    for (const file of files) {
-        fs.unlinkSync(path.join(profileDirectory, file))
-    }
-
-})
 
 const activeUser = { username: 'user1', email: 'user1@email.com', password: 'P4ssword', inactive: false }
 const addUser = async (user = { ...activeUser }) => {
