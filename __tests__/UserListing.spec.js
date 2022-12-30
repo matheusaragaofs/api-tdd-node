@@ -5,7 +5,9 @@ const sequelize = require('../src/config/database')
 const bcrypt = require('bcrypt')
 
 beforeAll(async () => {
-    await sequelize.sync();
+    if (process.env.NODE_ENV === 'test') {
+        await sequelize.sync();
+    }
 });
 
 beforeEach(async () => {

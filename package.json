@@ -7,7 +7,12 @@
     "start": "cross-env NODE_ENV=development nodemon index",
     "test": "cross-env NODE_ENV=test jest --watch --verbose",
     "lint": "eslint .",
-    "posttest": "cross-env NODE_ENV=test node test-cleanup"
+    "posttest": "cross-env NODE_ENV=test node test-cleanup",
+    "posttest:staging": "cross-env NODE_ENV=staging node test-cleanup",
+    "test:staging": "cross-env NODE_ENV=staging jest -f . --verbose --runInBand",
+    "migrate:test": "cross-env NODE_ENV=staging sequelize-cli db:migrate",
+    "pretest:staging":"npm run migrate:test"
+
   },
   "author": "Matheus Aragão",
   "license": "ISC",

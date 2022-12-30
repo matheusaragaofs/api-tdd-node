@@ -12,7 +12,10 @@ const profileDirectory = path.join('.', uploadDir, profileDir)
 
 
 beforeAll(async () => {
-    await sequelize.sync()
+    if (process.env.NODE_ENV === 'test') {
+        await sequelize.sync()
+    }
+
 })
 beforeEach(async () => {
     await User.destroy({ truncate: { cascade: true } })
