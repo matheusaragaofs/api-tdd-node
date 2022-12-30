@@ -9,14 +9,28 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+
       username: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       email: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       password: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+      },
+      inactive: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+      },
+      activationToken: {
+        type: Sequelize.STRING,
+      },
+      passwordResetToken: {
+        type: Sequelize.STRING,
+      },
+      image: {
+        type: Sequelize.STRING,
       },
       createdAt: {
         allowNull: false,
