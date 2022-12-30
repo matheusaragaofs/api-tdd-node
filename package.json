@@ -7,7 +7,7 @@
     "start": "cross-env NODE_ENV=development nodemon index",
     "test": "cross-env NODE_ENV=test jest --watch --verbose",
     "lint": "eslint .",
-    "posttest":"cross-env NODE_ENV=test node test-cleanup"
+    "posttest": "cross-env NODE_ENV=test node test-cleanup"
   },
   "author": "Matheus Aragão",
   "license": "ISC",
@@ -19,6 +19,7 @@
     "express-validator": "^6.14.2",
     "nodemailer": "^6.7.6",
     "sequelize": "^6.21.0",
+    "sequelize-cli": "^6.5.2",
     "sqlite3": "^5.0.8"
   },
   "devDependencies": {
