@@ -4,7 +4,7 @@ const database = require('../config/database');
 
 const Model = Sequelize.Model;
 
-class User extends Model { }
+class User extends Model {}
 
 User.init(
   {
@@ -29,15 +29,14 @@ User.init(
     },
     image: {
       type: Sequelize.STRING,
-    }
+    },
   },
   {
     sequelize: database,
-    modelName: 'user',
+    modelName: 'users',
   }
 );
 
-User.hasMany(Token, { onDelete: 'cascade', foreignKey: 'userId' })
-
+User.hasMany(Token, { onDelete: 'cascade', foreignKey: 'userId' });
 
 module.exports = User;

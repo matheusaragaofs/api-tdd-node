@@ -1,23 +1,24 @@
 const Sequelize = require('sequelize');
 const database = require('../config/database');
 
-
 const Model = Sequelize.Model;
 
+class Token extends Model {}
 
-class Token extends Model { }
-
-Token.init({
+Token.init(
+  {
     token: {
-        type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     lastUsedAt: {
-        type: Sequelize.DATE
+      type: Sequelize.DATE,
     },
-}, {
+  },
+  {
     sequelize: database,
-    modelName: 'TOKEN',
-    timestamps: false
-})
+    modelName: 'tokens',
+    timestamps: false,
+  }
+);
 
-module.exports = Token
+module.exports = Token;
