@@ -4,16 +4,14 @@
   "description": "tdd with express",
   "main": "app.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=development nodemon index",
-    "test": "cross-env NODE_ENV=test jest --watch --verbose",
     "lint": "eslint .",
+    "start:dev": "cross-env NODE_ENV=development npm run migrate && cross-env NODE_ENV=development nodemon index ",
+    "migrate": "sequelize-cli db:migrate",
+    "test": "cross-env NODE_ENV=test jest --watch --verbose",
     "posttest": "cross-env NODE_ENV=test node test-cleanup",
-    "posttest:staging": "cross-env NODE_ENV=staging node test-cleanup",
+    "pretest:staging": "cross-env NODE_ENV=staging npm run migrate",
     "test:staging": "cross-env NODE_ENV=staging jest -f . --verbose --runInBand --forceExit",
-    "migrate:test": "cross-env NODE_ENV=staging sequelize-cli db:migrate",
-    "migrate:undo:test": "cross-env NODE_ENV=staging sequelize-cli db:migrate:undo:all",
-    "seed:staging": "cross-env NODE_ENV=staging sequelize-cli db:seed:all",
-    "pretest:staging": "npm run migrate:test"
+    "posttest:staging": "cross-env NODE_ENV=staging node test-cleanup"
   },
   "author": "Matheus Aragão",
   "license": "ISC",
