@@ -2,16 +2,16 @@ const request = require('supertest');
 const app = require('../src/app');
 
 const User = require('../src/user/User');
+const Hoax = require('../src/hoax/Hoax');
 const sequelize = require('../src/config/database');
 const bcrypt = require('bcrypt');
-
 beforeAll(async () => {
   if (process.env.NODE_ENV === 'test') {
     await sequelize.sync();
   }
 });
 beforeEach(async () => {
-  await User.destroy({ truncate: { cascade: true } });
+  await Hoax.destroy({ truncate: { cascade: true } });
 });
 
 const activeUser = { username: 'user1', email: 'user1@email.com', password: 'P4ssword', inactive: false };
@@ -67,5 +67,39 @@ describe('Post Hoax', () => {
       }
     );
     expect(response.status).toBe(200);
+  });
+  it('saves the hoaxes to database when authorized user sends valid request', async () => {
+    await addUser();
+    await postHoax(
+      { content: 'Hoax Content' },
+      {
+        auth: credentials,
+      }
+    );
+    const hoaxesInDatabase = await Hoax.findAll();
+    expect(hoaxesInDatabase.length).toBe(1);
+  });
+  it('saves the hoax content and timestamp to database', async () => {
+    await addUser();
+    const beforeSubmit = Date.now();
+    await postHoax(
+      { content: 'Hoax Content' },
+      {
+        auth: credentials,
+      }
+    );
+    const [savedHoax] = await Hoax.findAll();
+    expect(savedHoax.content).toBe('Hoax Content');
+    expect(savedHoax.timestamp).toBeGreaterThan(beforeSubmit);
+    expect(savedHoax.timestamp).toBeLessThan(Date.now());
+  });
+  it("returns 'Hoax Saved' message to success submit", async () => {
+    const response = await postHoax(
+      { content: 'Hoax Content' },
+      {
+        auth: credentials,
+      }
+    );
+    expect(response.body.message).toBe('Hoax Saved');
   });
 });
