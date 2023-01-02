@@ -1,5 +1,4 @@
-module.exports = function AuthenticationException() {
-    this.status = 401
-    this.message = 'Incorrect Credentials'
-
-}
+module.exports = function AuthenticationException(status = 401, message = 'Incorrect Credentials') {
+  this.status = status;
+  this.message = message;
+};
