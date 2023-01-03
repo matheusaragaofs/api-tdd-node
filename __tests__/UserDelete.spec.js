@@ -4,6 +4,7 @@ const User = require('../src/user/User');
 const sequelize = require('../src/config/database');
 const bcrypt = require('bcrypt');
 const Token = require('../src/auth/Token');
+const Hoax = require('../src/hoax/Hoax');
 beforeAll(async () => {
   if (process.env.NODE_ENV === 'test') {
     await sequelize.sync();
@@ -111,5 +112,21 @@ describe('User Delete', () => {
 
     const tokenInDB = await Token.findOne({ where: { token: token2 } });
     expect(tokenInDB).toBeNull();
+  });
+  it('deletes hoax from database when delete user request sent from authorized user', async () => {
+    const savedUser = await addUser();
+    const token = await auth({
+      auth: credentials,
+    });
+
+    const response = await request(app)
+      .post('/api/1.0/hoaxes')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'Hoax Content' });
+
+    await deleteUser(savedUser.id, { token });
+    // const hoaxes = await Hoax.findAll();
+    const hoaxes = await Hoax.findAll({ where: { userId: savedUser.id } });
+    expect(hoaxes.length).toBe(0);
   });
 });

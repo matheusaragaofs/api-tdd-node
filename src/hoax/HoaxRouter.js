@@ -8,7 +8,8 @@ router.post(
   '/api/1.0/hoaxes',
   check('content').isLength({ min: 10, max: 5000 }).withMessage('Hoax must be min 10 and max 5000 characters'),
   async (req, res, next) => {
-    if (!req.authenticatedUser) {
+    const authenticatedUser = req.authenticatedUser;
+    if (!authenticatedUser) {
       return next(new AuthenticationException(401, 'You are not authorized to post a Hoax'));
     }
     const errors = validationResult(req);
@@ -17,7 +18,7 @@ router.post(
       return next(new ValidationException(errors.array()));
     }
     const hoax = req.body;
-    await HoaxService.save(hoax);
+    await HoaxService.save(hoax, authenticatedUser);
     res.send({ message: 'Hoax Saved' });
   }
 );

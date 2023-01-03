@@ -11,7 +11,10 @@ beforeAll(async () => {
   }
 });
 beforeEach(async () => {
-  await Hoax.destroy({ truncate: { cascade: true } });
+  await User.destroy({ truncate: { cascade: true } });
+  // if the user table was deleted, by on cascade delete , the hoax table will be deleted too.
+  // entities associated with this user, will also be gone
+  // await Hoax.destroy({ truncate: { cascade: true } });
 });
 
 const activeUser = { username: 'user1', email: 'user1@email.com', password: 'P4ssword', inactive: false };
@@ -93,6 +96,7 @@ describe('Post Hoax', () => {
     expect(savedHoax.content).toBe('Hoax Content');
   });
   it("returns 'Hoax Saved' message to success submit", async () => {
+    await addUser();
     const response = await postHoax(
       { content: 'Hoax Content' },
       {
@@ -130,5 +134,11 @@ describe('Post Hoax', () => {
     await addUser();
     const response = await postHoax({ content }, { auth: credentials });
     expect(response.body.validationErrors.content).toBe(message);
+  });
+  it('stores hoax owner id in database ', async () => {
+    const user = await addUser();
+    await postHoax({ content: 'Hoax Content' }, { auth: credentials });
+    const [hoax] = await Hoax.findAll();
+    expect(hoax.userId).toBe(user.id);
   });
 });
