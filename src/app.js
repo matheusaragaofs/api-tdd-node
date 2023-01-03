@@ -6,6 +6,7 @@ const tokenAuthentication = require('./middleware/tokenAuthentication');
 const config = require('config');
 const path = require('path');
 const HoaxRouter = require('./hoax/HoaxRouter');
+const FileRouter = require('./file/FileRouter');
 
 const ONE_YEAR_IN_MILLIS = 365 * 24 * 60 * 60 * 1000;
 
@@ -23,6 +24,7 @@ app.use('/images', express.static(profileFolder, { maxAge: ONE_YEAR_IN_MILLIS })
 
 app.use(tokenAuthentication);
 app.use(UserRouter);
+app.use(FileRouter);
 app.use(HoaxRouter);
 
 app.use(AuthenticationRouter);
