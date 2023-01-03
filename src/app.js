@@ -10,8 +10,9 @@ const FileRouter = require('./file/FileRouter');
 
 const ONE_YEAR_IN_MILLIS = 365 * 24 * 60 * 60 * 1000;
 
-const { uploadDir, profileDir } = config;
+const { uploadDir, profileDir, attachmentDir } = config;
 const profileFolder = path.join('.', uploadDir, profileDir);
+const attachmentFolder = path.join('.', uploadDir, attachmentDir);
 
 const FileService = require('./file/FileService');
 
@@ -21,6 +22,7 @@ const app = express();
 app.use(express.json({ limit: '3mb' }));
 
 app.use('/images', express.static(profileFolder, { maxAge: ONE_YEAR_IN_MILLIS })); //default behaviour of express, it will be converted to seconds in the headers
+app.use('/attachments', express.static(attachmentFolder, { maxAge: ONE_YEAR_IN_MILLIS })); //default behaviour of express, it will be converted to seconds in the headers
 
 app.use(tokenAuthentication);
 app.use(UserRouter);
