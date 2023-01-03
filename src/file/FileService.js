@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('config');
 const { randomString } = require('../shared/generator');
+
 const { uploadDir, profileDir, attachmentDir } = config;
 const detect = require('detect-file-type');
 const FileAttachment = require('./FileAttachment');
@@ -40,12 +41,29 @@ const isSupportedFileType = (buffer) =>
     });
   });
 
+const getFileType = (buffer) =>
+  new Promise((resolve, reject) => {
+    detect.fromBuffer(buffer, (err, result) => {
+      if (!err) resolve(result);
+      else {
+        reject(err);
+      }
+    });
+  });
+
 const saveAttachment = async ({ file }) => {
-  const filename = randomString(32);
+  const type = await getFileType(file.buffer);
+  let fileType;
+  let filename = randomString(32);
+  if (type) {
+    fileType = type.mime;
+    filename += `.${type.ext}`;
+  }
   await fs.promises.writeFile(path.join(attachmentFolder, filename), file.buffer);
   await FileAttachment.create({
     filename,
     uploadDate: new Date(),
+    fileType,
   });
 };
 
