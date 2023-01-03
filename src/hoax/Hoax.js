@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const database = require('../config/database');
+const FileAttachment = require('../file/FileAttachment');
 
 const { Model, STRING, BIGINT } = Sequelize;
 class Hoax extends Model {}
@@ -19,5 +20,6 @@ Hoax.init(
     timestamps: false,
   }
 );
+Hoax.hasOne(FileAttachment, { foreignKey: 'hoaxId' });
 
 module.exports = Hoax;

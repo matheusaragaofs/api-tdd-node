@@ -60,11 +60,25 @@ const saveAttachment = async ({ file }) => {
     filename += `.${type.ext}`;
   }
   await fs.promises.writeFile(path.join(attachmentFolder, filename), file.buffer);
-  await FileAttachment.create({
+  const savedAttachment = await FileAttachment.create({
     filename,
     uploadDate: new Date(),
     fileType,
   });
+  return {
+    id: savedAttachment.id,
+  };
+};
+const associateFileToHoax = async (attachmentId, hoaxId) => {
+  const attachment = await FileAttachment.findOne({ where: { id: attachmentId } });
+  if (!attachment) {
+    return;
+  }
+  if (attachment.hoaxId) {
+    return;
+  }
+  attachment.hoaxId = hoaxId;
+  await attachment.save();
 };
 
 module.exports = {
@@ -74,4 +88,5 @@ module.exports = {
   isLessThan2MB,
   isSupportedFileType,
   saveAttachment,
+  associateFileToHoax,
 };
