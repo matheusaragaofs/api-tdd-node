@@ -4,6 +4,7 @@ const path = require('path');
 const FileAttachment = require('../src/file/FileAttachment');
 const config = require('config');
 const { uploadDir, attachmentDir } = config;
+const fs = require('fs');
 const sequelize = require('../src/config/database');
 
 beforeAll(async () => {
@@ -34,5 +35,12 @@ describe('Upload File for Hoax', () => {
     //different users may use the same name for the file, so we have to save a dynamic filename
     expect(attachment.filename).not.toBe('test-png.png');
     expect(attachment.uploadDate.getTime()).toBeGreaterThan(beforeSubmit);
+  });
+  it('saves file to attachment folder', async () => {
+    await uploadFile();
+    const attachments = await FileAttachment.findAll();
+    const attachment = attachments[0];
+    const filePath = path.join('.', uploadDir, attachmentDir, attachment.filename);
+    expect(fs.existsSync(filePath)).toBe(true);
   });
 });
