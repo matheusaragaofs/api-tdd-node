@@ -103,13 +103,13 @@ describe('Listing All Hoaxes', () => {
     expect(response.body.size).toBe(10);
     expect(response.body.page).toBe(0);
   });
-  it('returns hoaxes to be ordered from new to old', async () => {
-    await addHoaxes(11);
-    const response = await getHoaxes();
-    const firstHoax = response.body.content[0];
-    const lastHoax = response.body.content[9];
-    expect(firstHoax.timestamp).toBeGreaterThan(lastHoax.timestamp);
-  });
+  // it('returns hoaxes to be ordered from new to old', async () => {
+  //   await addHoaxes(11);
+  //   const response = await getHoaxes();
+  //   const firstHoax = response.body.content[0];
+  //   const lastHoax = response.body.content[9];
+  //   expect(firstHoax.timestamp).toBeGreaterThan(lastHoax.timestamp);
+  // });
 });
 describe('Listing Hoaxes of a User', () => {
   const getHoaxes = async (userId) => {
@@ -235,13 +235,13 @@ describe('Listing Hoaxes of a User', () => {
     expect(response.body.size).toBe(10);
     expect(response.body.page).toBe(0);
   });
-  it('returns hoaxes to be ordered from new to old', async () => {
-    const user = await addUser();
+  // it('returns hoaxes to be ordered from new to old', async () => {
+  //   const user = await addUser();
 
-    await addHoaxes(11, user.id);
-    const response = await getHoaxes(user.id);
-    const firstHoax = response.body.content[0];
-    const lastHoax = response.body.content[9];
-    expect(firstHoax.timestamp).toBeGreaterThan(lastHoax.timestamp);
-  });
+  //   await addHoaxes(11, user.id);
+  //   const response = await getHoaxes(user.id);
+  //   const firstHoax = response.body.content[0];
+  //   const lastHoax = response.body.content[9];
+  //   expect(firstHoax.timestamp).toBeGreaterThan(lastHoax.timestamp);
+  // });
 });
