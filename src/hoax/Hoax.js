@@ -15,7 +15,7 @@ Hoax.init(
   },
   {
     sequelize: database,
-    modelName: 'hoax',
+    modelName: 'hoaxes',
     timestamps: false,
   }
 );
