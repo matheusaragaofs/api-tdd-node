@@ -102,4 +102,34 @@ describe('Post Hoax', () => {
     );
     expect(response.body.message).toBe('Hoax Saved');
   });
+  it("returns 400 and 'Validation Failure' message when content length is less than 10", async () => {
+    await addUser();
+    const response = await postHoax(
+      { content: 'abc' },
+      {
+        auth: credentials,
+      }
+    );
+    expect(response.body.message).toBe('Validation Failure');
+    expect(response.status).toBe(400);
+  });
+  it('returns validation error body when an invalid hoax post by authorized user', async () => {
+    await addUser();
+    const nowInMillis = Date.now();
+    const response = await postHoax({ content: '123456789' }, { auth: credentials });
+    const error = response.body;
+    expect(error.timestamp).toBeGreaterThan(nowInMillis);
+    expect(error.path).toBe('/api/1.0/hoaxes');
+    expect(Object.keys(error)).toEqual(['path', 'timestamp', 'message', 'validationErrors']);
+  });
+  it.each`
+    content             | contentForDescription | message
+    ${null}             | ${'null'}             | ${'Hoax must be min 10 and max 5000 characters'}
+    ${'a'.repeat(9)}    | ${'short'}            | ${'Hoax must be min 10 and max 5000 characters'}
+    ${'a'.repeat(5001)} | ${'very long'}        | ${'Hoax must be min 10 and max 5000 characters'}
+  `('returns $message when the content is $contentForDescription', async ({ content, message }) => {
+    await addUser();
+    const response = await postHoax({ content }, { auth: credentials });
+    expect(response.body.validationErrors.content).toBe(message);
+  });
 });
