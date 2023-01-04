@@ -3,7 +3,7 @@ const database = require('../config/database');
 const FileAttachment = require('../file/FileAttachment');
 
 const { Model, STRING, BIGINT } = Sequelize;
-class Hoax extends Model {}
+class Hoax extends Model { }
 
 Hoax.init(
   {
