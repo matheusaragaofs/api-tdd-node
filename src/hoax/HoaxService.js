@@ -62,16 +62,15 @@ const getHoaxes = async ({ page, size, userId }) => {
   };
 };
 
-const deleteHoax = async ({ id, userId }) => {
-  const hoaxDeleted = await Hoax.destroy({
-    where: {
-      [Sequelize.Op.and]: [{ id }, { userId }]
-    }
-  })
+const getHoax = async ({ id }) => {
+  return await Hoax.findOne({ where: { id } })
+}
 
-  if (!hoaxDeleted) {
+const deleteHoax = async ({ id, userId }) => {
+  const hoaxToBeDeleted = await Hoax.findOne({ where: { id, userId } })
+  if (!hoaxToBeDeleted) {
     throw new ForbiddenExecption('You are not authorized to delete this hoax')
   }
-
+  await hoaxToBeDeleted.destroy()
 }
-module.exports = { save, getHoaxes, deleteHoax };
+module.exports = { save, getHoaxes, getHoax, deleteHoax };
