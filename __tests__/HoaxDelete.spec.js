@@ -43,7 +43,7 @@ const addHoax = async (userId) => {
 const addFileAttachment = async (hoaxId) => {
     fs.copyFileSync(testFilePath, targetPath);
     return await FileAttachment.create({
-        filename: filename,
+        filename,
         uploadDate: new Date(),
         hoaxId,
     });

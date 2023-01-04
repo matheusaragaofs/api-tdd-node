@@ -67,9 +67,16 @@ const getHoax = async ({ id }) => {
 }
 
 const deleteHoax = async ({ id, userId }) => {
-  const hoaxToBeDeleted = await Hoax.findOne({ where: { id, userId } })
+  const hoaxToBeDeleted = await Hoax.findOne({
+    where: { id, userId },
+    include: { model: FileAttachment },
+  })
   if (!hoaxToBeDeleted) {
     throw new ForbiddenExecption('You are not authorized to delete this hoax')
+  }
+  const hoaxJSON = hoaxToBeDeleted.get({ plain: true });
+  if (hoaxJSON.fileAttachment !== null) {
+    await FileService.deleteAttachment(hoaxJSON.fileAttachment.filename);
   }
   await hoaxToBeDeleted.destroy()
 }
