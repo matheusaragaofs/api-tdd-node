@@ -5,13 +5,6 @@ const FileAttachment = require('../src/file/FileAttachment');
 const config = require('config');
 const { uploadDir, attachmentDir } = config;
 const fs = require('fs');
-const sequelize = require('../src/config/database');
-
-beforeAll(async () => {
-  if (process.env.NODE_ENV === 'test') {
-    await sequelize.sync();
-  }
-});
 
 beforeEach(async () => {
   await FileAttachment.destroy({ truncate: true });

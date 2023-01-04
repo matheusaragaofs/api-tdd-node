@@ -8,7 +8,6 @@ const config = require('config');
 const Token = require('../src/auth/Token');
 let lastMail, server;
 let simulateSmtpFailure = false;
-
 beforeAll(async () => {
     server = new SMTPServer({
         authOptional: true,
@@ -29,9 +28,6 @@ beforeAll(async () => {
         }
     })
     await server.listen(config.mail.port, 'localhost')
-    if (process.env.NODE_ENV === 'test') {
-        await sequelize.sync();
-    }
     jest.setTimeout(20000)
 });
 

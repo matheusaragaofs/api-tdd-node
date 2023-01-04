@@ -4,7 +4,7 @@ const path = require('path');
 const config = require('config');
 
 const { uploadDir, profileDir, attachmentDir } = config;
-describe('createFolders', () => {
+describe('Create Folders', () => {
   it('creates upload folder', () => {
     FileService.createFolders();
     expect(fs.existsSync(uploadDir)).toBe(true);

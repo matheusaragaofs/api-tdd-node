@@ -1,6 +1,0 @@
-{"level":"error","message":"error 1"}
-{"level":"warn","message":"warn 2"}
-{"level":"info","message":"info 3"}
-{"level":"verbose","message":"verbose 4"}
-{"level":"debug","message":"debug 5"}
-{"level":"info","message":"app is running!"}
