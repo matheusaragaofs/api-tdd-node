@@ -2,8 +2,9 @@ const User = require('../user/User');
 const UserNotFoundException = require('../user/UserNotFoundException');
 const FileService = require('../file/FileService');
 const FileAttachment = require('../file/FileAttachment');
-
+const Sequelize = require('sequelize')
 const Hoax = require('./Hoax');
+const ForbiddenExecption = require('../error/ForbiddenExecption');
 const save = async (body, user) => {
   const { content } = body;
   const hoax = {
@@ -60,4 +61,17 @@ const getHoaxes = async ({ page, size, userId }) => {
     totalPages: Math.ceil(hoaxesWithCount.count / size),
   };
 };
-module.exports = { save, getHoaxes };
+
+const deleteHoax = async ({ id, userId }) => {
+  const hoaxDeleted = await Hoax.destroy({
+    where: {
+      [Sequelize.Op.and]: [{ id }, { userId }]
+    }
+  })
+
+  if (!hoaxDeleted) {
+    throw new ForbiddenExecption('You are not authorized to delete this hoax')
+  }
+
+}
+module.exports = { save, getHoaxes, deleteHoax };
